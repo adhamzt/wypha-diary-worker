@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: '#f8fafc', theme_color: '#4f46e5', orientation: 'portrait-primary',
     categories: ['productivity', 'business'],
     icons: [
-      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }
     ],
     shortcuts: [
       { name: 'Catat Sekarang', short_name: 'Catat', url: '/add/', icons: [{ src: '/icon-192.png', sizes: '192x192' }] },
