@@ -16,12 +16,13 @@ export function EntryDetail() {
   const tags=useMemo(()=>entry?.tags.join(', ')||'',[entry?.tags]); const skills=useMemo(()=>entry?.skills?.join(', ')||'',[entry?.skills])
   if(loading) return <main className="app-shell"><div className="card h-80 animate-pulse bg-slate-100 dark:bg-slate-800"/></main>
   if(!entry) return <main className="app-shell"><div className="card p-8 text-center"><h1 className="font-black">Catatan tidak ditemukan</h1><button className="btn-secondary mt-4" onClick={()=>router.push('/timeline/')}>Kembali</button></div></main>
+  const current=entry
   const set=<K extends keyof WorkEntry>(k:K,v:WorkEntry[K])=>setEntry(e=>e?{...e,[k]:v}:e)
-  async function save(){ const next=await updateEntry(entry,key); setEntry(next); setMessage('Perubahan tersimpan.') }
-  async function duplicate(){ const copy=await duplicateEntry(entry.id,key); router.push(`/entry/?id=${encodeURIComponent(copy.id)}`) }
-  async function remove(){ if(!confirm('Hapus catatan ini permanen?'))return; await deleteEntry(entry.id); router.push('/timeline/') }
-  async function archive(){ const next=await updateEntry({...entry,archived:!entry.archived},key); setEntry(next); setMessage(next.archived?'Catatan diarsipkan.':'Catatan dikembalikan.') }
-  async function openHistory(){ const rows=await listHistory(entry.id,key); setHistory(rows); setShowHistory(v=>!v) }
+  async function save(){ const next=await updateEntry(current,key); setEntry(next); setMessage('Perubahan tersimpan.') }
+  async function duplicate(){ const copy=await duplicateEntry(current.id,key); router.push(`/entry/?id=${encodeURIComponent(copy.id)}`) }
+  async function remove(){ if(!confirm('Hapus catatan ini permanen?'))return; await deleteEntry(current.id); router.push('/timeline/') }
+  async function archive(){ const next=await updateEntry({...current,archived:!current.archived},key); setEntry(next); setMessage(next.archived?'Catatan diarsipkan.':'Catatan dikembalikan.') }
+  async function openHistory(){ const rows=await listHistory(current.id,key); setHistory(rows); setShowHistory(v=>!v) }
   async function downloadAttachment(a:WorkEntry['attachments'][number]){ const blob=await getAttachmentBlob(a.id,key); const url=URL.createObjectURL(blob); const el=document.createElement('a'); el.href=url; el.download=a.name; el.click(); setTimeout(()=>URL.revokeObjectURL(url),1000) }
   return <main className="app-shell"><header className="pt-2"><p className="eyebrow">DETAIL ENTRY</p><h1 className="mt-1 text-3xl font-black">Edit bukti kerja</h1><p className="mt-1 text-sm text-slate-500">Versi lama disimpan setiap kali Anda menekan Simpan.</p></header>
     <section className="card mt-5 space-y-4 p-5">
