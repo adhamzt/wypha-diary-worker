@@ -1,5 +1,9 @@
 import type { MetadataRoute } from 'next'
 
+// Required when using Next.js static export so /manifest.webmanifest
+// is generated at build time instead of treated as a dynamic route.
+export const dynamic = 'force-static'
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
