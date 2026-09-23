@@ -5,11 +5,11 @@ const AES = 'AES-GCM'
 const SESSION_KEY = 'logkerja-session-dek'
 const PRF_LABEL = 'LogKerja biometric vault v1'
 
-async function importAes(raw: Uint8Array): Promise<CryptoKey> {
+async function importAes(raw: Uint8Array<ArrayBuffer>): Promise<CryptoKey> {
   return crypto.subtle.importKey('raw', raw, AES, true, ['encrypt', 'decrypt'])
 }
 
-async function derivePinKey(pin: string, salt: Uint8Array, iterations: number): Promise<CryptoKey> {
+async function derivePinKey(pin: string, salt: Uint8Array<ArrayBuffer>, iterations: number): Promise<CryptoKey> {
   const material = await crypto.subtle.importKey('raw', utf8(pin), 'PBKDF2', false, ['deriveKey'])
   return crypto.subtle.deriveKey(
     { name: 'PBKDF2', hash: 'SHA-256', salt, iterations },
@@ -20,7 +20,7 @@ async function derivePinKey(pin: string, salt: Uint8Array, iterations: number): 
   )
 }
 
-async function wrapRawKey(rawDek: Uint8Array, wrappingKey: CryptoKey) {
+async function wrapRawKey(rawDek: Uint8Array<ArrayBuffer>, wrappingKey: CryptoKey) {
   const iv = randomBytes(12)
   const cipher = await crypto.subtle.encrypt({ name: AES, iv }, wrappingKey, rawDek)
   return { wrappedKey: bytesToBase64(cipher), wrapIv: bytesToBase64(iv) }
@@ -88,7 +88,7 @@ function toBase64Url(bytes: ArrayBuffer | Uint8Array) {
   return bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
 }
 
-async function wrappingKeyFromPrf(bytes: Uint8Array) {
+async function wrappingKeyFromPrf(bytes: Uint8Array<ArrayBuffer>) {
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return importAes(new Uint8Array(digest))
 }
