@@ -1,0 +1,8 @@
+import type { WorkEntry } from '@/types'
+
+export function projectMinutes(entries:WorkEntry[]){const m=new Map<string,number>();for(const e of entries){const k=e.project||'Tanpa proyek';m.set(k,(m.get(k)||0)+(e.durationMin||0))}return [...m.entries()].sort((a,b)=>b[1]-a[1])}
+export function skillCounts(entries:WorkEntry[]){const m=new Map<string,number>();for(const e of entries)for(const s of e.skills||[])m.set(s,(m.get(s)||0)+1);return [...m.entries()].sort((a,b)=>b[1]-a[1])}
+export function moodSeries(entries:WorkEntry[]){const m=new Map<string,number[]>();for(const e of entries){const a=m.get(e.date)||[];a.push(e.mood);m.set(e.date,a)}return [...m.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([date,v])=>({date,mood:v.reduce((s,x)=>s+x,0)/v.length,count:v.length}))}
+export function heatmap(entries:WorkEntry[],days=84){const counts=new Map<string,number>();for(const e of entries)counts.set(e.date,(counts.get(e.date)||0)+1);const out=[];const d=new Date();d.setHours(12,0,0,0);for(let i=days-1;i>=0;i--){const x=new Date(d);x.setDate(d.getDate()-i);const key=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;out.push({date:key,count:counts.get(key)||0})}return out}
+function pearson(xs:number[],ys:number[]){if(xs.length<3||xs.length!==ys.length)return null;const ax=xs.reduce((a,b)=>a+b,0)/xs.length,ay=ys.reduce((a,b)=>a+b,0)/ys.length;let num=0,dx=0,dy=0;for(let i=0;i<xs.length;i++){const x=xs[i]-ax,y=ys[i]-ay;num+=x*y;dx+=x*x;dy+=y*y}return dx&&dy?num/Math.sqrt(dx*dy):null}
+export function moodOutputCorrelation(entries:WorkEntry[]){const s=moodSeries(entries).filter(x=>x.count>0);return pearson(s.map(x=>x.mood),s.map(x=>x.count))}

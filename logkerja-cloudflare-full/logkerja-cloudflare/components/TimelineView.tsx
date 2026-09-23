@@ -1,0 +1,36 @@
+'use client'
+
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { CalendarDays, Clock3, Filter, Search, Star, X } from 'lucide-react'
+import { useEntries } from '@/hooks/useEntries'
+import type { Mood, WorkEntry } from '@/types'
+
+const moodEmoji: Record<Mood, string> = { 1: '😣', 2: '😕', 3: '😐', 4: '🙂', 5: '🚀' }
+function localKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
+function prettyDate(value: string) {
+  const date = new Date(`${value}T00:00:00`); const today = new Date(); const yesterday = new Date(); yesterday.setDate(today.getDate()-1)
+  if (value === localKey(today)) return 'Hari ini'; if (value === localKey(yesterday)) return 'Kemarin'
+  return new Intl.DateTimeFormat('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }).format(date)
+}
+function containsText(entry: WorkEntry, query: string) {
+  if (!query) return true
+  return [entry.activity,entry.problem,entry.solution,entry.lesson,entry.project,entry.client,entry.impact,...entry.tags,...(entry.skills||[])].filter(Boolean).join(' ').toLocaleLowerCase('id-ID').includes(query.toLocaleLowerCase('id-ID'))
+}
+
+export function TimelineView() {
+  const entries = useEntries()
+  const [query,setQuery]=useState(''); const [project,setProject]=useState(''); const [mood,setMood]=useState<''|Mood>(''); const [from,setFrom]=useState(''); const [to,setTo]=useState(''); const [achievement,setAchievement]=useState(false); const [showFilters,setShowFilters]=useState(false)
+  const projects=useMemo(()=>Array.from(new Set(entries.map(e=>e.project).filter(Boolean) as string[])).sort(),[entries])
+  const filtered=useMemo(()=>entries.filter(e=>!e.archived&&containsText(e,query.trim())&&(!project||e.project===project)&&(!mood||e.mood===mood)&&(!from||e.date>=from)&&(!to||e.date<=to)&&(!achievement||e.isAchievement)),[entries,query,project,mood,from,to,achievement])
+  const grouped=useMemo(()=>{ const m=new Map<string,WorkEntry[]>(); for(const e of filtered){ const c=m.get(e.date)||[]; c.push(e); m.set(e.date,c)} return Array.from(m.entries())},[filtered])
+  const activeFilters=[project,mood,from,to,achievement].filter(Boolean).length
+  const clear=()=>{setProject('');setMood('');setFrom('');setTo('');setAchievement(false)}
+  const quickRange=(days:number)=>{const end=new Date();const start=new Date();start.setDate(end.getDate()-(days-1));setFrom(localKey(start));setTo(localKey(end))}
+  return <main className="app-shell"><header className="pt-2"><p className="eyebrow">TIMELINE</p><div className="mt-1 flex items-end justify-between gap-3"><div><h1 className="text-3xl font-black tracking-tight">Jejak Kerja</h1><p className="mt-1 text-sm text-slate-500">{filtered.length} catatan ditemukan</p></div><button onClick={()=>setShowFilters(v=>!v)} className="btn-secondary !min-h-10 !px-3"><Filter size={18}/>{activeFilters>0&&<span>{activeFilters}</span>}</button></div></header>
+    <div className="mt-4 flex gap-2 overflow-x-auto pb-1"><button className="chip shrink-0" onClick={()=>quickRange(1)}>Hari ini</button><button className="chip shrink-0" onClick={()=>quickRange(7)}>7 hari</button><button className="chip shrink-0" onClick={()=>quickRange(30)}>30 hari</button><button className="chip shrink-0" onClick={clear}>Semua</button></div>
+    <div className="relative mt-3"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} className="field !pl-11" placeholder="Cari aktivitas, masalah, solusi, skill, tag…"/>{query&&<button onClick={()=>setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400"><X size={17}/></button>}</div>
+    {showFilters&&<section className="card mt-3 grid gap-3 p-4 sm:grid-cols-2"><div><label className="label">Proyek</label><select className="field" value={project} onChange={e=>setProject(e.target.value)}><option value="">Semua proyek</option>{projects.map(x=><option key={x}>{x}</option>)}</select></div><div><label className="label">Mood</label><select className="field" value={mood} onChange={e=>setMood(e.target.value?Number(e.target.value) as Mood:'')}><option value="">Semua mood</option>{([1,2,3,4,5] as Mood[]).map(v=><option key={v} value={v}>{moodEmoji[v]} Mood {v}</option>)}</select></div><div><label className="label">Dari</label><input type="date" className="field" value={from} onChange={e=>setFrom(e.target.value)}/></div><div><label className="label">Sampai</label><input type="date" className="field" value={to} onChange={e=>setTo(e.target.value)}/></div><label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={achievement} onChange={e=>setAchievement(e.target.checked)} className="h-5 w-5 accent-indigo-600"/> Hanya pencapaian</label>{activeFilters>0&&<button onClick={clear} className="btn-secondary sm:col-span-2">Reset filter</button>}</section>}
+    <section className="mt-6 space-y-6">{grouped.length===0?<div className="card p-8 text-center"><CalendarDays className="mx-auto text-indigo-400" size={36}/><p className="mt-3 font-bold">Belum ada catatan yang cocok.</p><p className="mt-1 text-sm text-slate-500">Coba ubah pencarian/filter atau tambahkan catatan baru.</p></div>:grouped.map(([date,day])=><div key={date}><div className="mb-3 flex items-center gap-3"><h2 className="text-sm font-extrabold text-slate-700 dark:text-slate-200">{prettyDate(date)}</h2><div className="h-px flex-1 bg-slate-200 dark:bg-slate-800"/><span className="text-xs font-semibold text-slate-400">{day.length}</span></div><div className="space-y-3">{day.map(e=><Link href={`/entry/?id=${encodeURIComponent(e.id)}`} key={e.id} className="card block p-4 sm:p-5"><div className="flex gap-3"><div className="text-2xl">{moodEmoji[e.mood]}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2 text-xs font-bold">{e.isAchievement&&<span className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-amber-700"><Star size={12} fill="currentColor"/>Pencapaian</span>}{e.project&&<span className="rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">{e.project}</span>}{e.client&&<span className="text-slate-400">{e.client}</span>}</div><p className="mt-2 whitespace-pre-wrap font-semibold leading-6">{e.activity}</p>{e.problem&&<div className="mt-3 rounded-2xl bg-amber-50 p-3 text-sm leading-6 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"><b>Masalah:</b> {e.problem}</div>}{e.solution&&<div className="mt-2 rounded-2xl bg-emerald-50 p-3 text-sm leading-6 text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"><b>Solusi:</b> {e.solution}</div>}<div className="mt-3 flex flex-wrap items-center gap-2">{e.durationMin&&<span className="flex items-center gap-1 text-xs font-semibold text-slate-400"><Clock3 size={13}/>{e.durationMin} mnt</span>}{e.tags.map(t=><span key={t} className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-800">#{t}</span>)}{e.attachments.length>0&&<span className="text-xs font-semibold text-slate-400">· {e.attachments.length} lampiran</span>}</div></div></div></Link>)}</div></div>)}</section>
+  </main>
+}
