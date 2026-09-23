@@ -8,7 +8,7 @@ interface PortableAttachment { id:string; entryId:string; name:string; type:stri
 interface BackupBody { version:1; exportedAt:string; entries:Awaited<ReturnType<typeof listEntries>>; attachments:PortableAttachment[]; projects:unknown[]; tags:unknown[]; templates:unknown[]; summaries:unknown[]; focusSessions:unknown[]; integrationRuns:unknown[]; settings:Partial<AppSettings> }
 interface BackupEnvelope { format:'logkerja-encrypted-backup'; version:1; kdf:'PBKDF2-SHA256'; iterations:number; salt:string; iv:string; cipher:string }
 
-async function derive(password:string,salt:Uint8Array,iterations:number){ const base=await crypto.subtle.importKey('raw',utf8(password),'PBKDF2',false,['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']) }
+async function derive(password:string,salt:Uint8Array<ArrayBuffer>,iterations:number){ const base=await crypto.subtle.importKey('raw',utf8(password),'PBKDF2',false,['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']) }
 function download(blob:Blob,name:string){ const url=URL.createObjectURL(blob); const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500) }
 
 export async function createEncryptedBackup(password:string,key:CryptoKey|null){
@@ -30,7 +30,7 @@ export async function restoreEncryptedBackup(file:File,password:string){
   const k=await derive(password,base64ToBytes(envelope.salt),envelope.iterations)
   let body:BackupBody
   try{ const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:base64ToBytes(envelope.iv)},k,base64ToBytes(envelope.cipher)); body=JSON.parse(decodeUtf8(plain)) }catch{throw new Error('Password backup salah atau file rusak.')}
-  await db.transaction('rw',db.entries,db.secureEntries,db.attachments,db.entryHistory,db.projects,db.tags,db.templates,db.summaries,db.drafts,db.secureDrafts,db.focusSessions,db.integrationRuns,db.settings,async()=>{
+  await db.transaction('rw',[db.entries,db.secureEntries,db.attachments,db.entryHistory,db.projects,db.tags,db.templates,db.summaries,db.drafts,db.secureDrafts,db.focusSessions,db.integrationRuns,db.settings],async()=>{
     await Promise.all([db.entries.clear(),db.secureEntries.clear(),db.attachments.clear(),db.entryHistory.clear(),db.projects.clear(),db.tags.clear(),db.templates.clear(),db.summaries.clear(),db.drafts.clear(),db.secureDrafts.clear(),db.focusSessions.clear(),db.integrationRuns.clear()])
     await db.entries.bulkPut(body.entries.map(e=>({...e}) as LegacyWorkEntry))
     const attachmentRows:AttachmentRecord[]=body.attachments.map(a=>({id:a.id,entryId:a.entryId,name:a.name,type:a.type,size:a.size,createdAt:a.createdAt,encrypted:false,blob:new Blob([base64ToBytes(a.data).buffer as ArrayBuffer],{type:a.type})}))
