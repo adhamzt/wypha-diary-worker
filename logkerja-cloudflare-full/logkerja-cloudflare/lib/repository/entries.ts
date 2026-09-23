@@ -1,6 +1,6 @@
 import { db } from '@/lib/db/db'
 import { decryptBlob, decryptJson, encryptBlob, encryptJson } from '@/lib/crypto/records'
-import type { AttachmentRecord, EntryDraft, EntryVersion, LegacyWorkEntry, WorkEntry } from '@/types'
+import type { AttachmentRecord, EntryDraft, EntryVersion, LegacyWorkEntry, SecureEntryRecord, WorkEntry } from '@/types'
 
 async function isSecurityEnabled() {
   const settings = await db.settings.get('app')
@@ -169,7 +169,7 @@ export async function migratePlaintextToVault(key: CryptoKey) {
   const history = (await db.entryHistory.toArray()).filter((item) => !item.encrypted && item.payload)
   const draft = await db.drafts.get('quick-capture')
 
-  const secureEntries = []
+  const secureEntries: SecureEntryRecord[] = []
   for (const legacy of entries) {
     const entry = stripLegacyBlobs(legacy)
     const secured = await encryptJson(entry, key)
@@ -209,7 +209,7 @@ export async function migratePlaintextToVault(key: CryptoKey) {
     secureDraft = { id: 'quick-capture', cipher: secured.cipher, iv: secured.iv, updatedAt: draft.updatedAt }
   }
 
-  await db.transaction('rw', db.entries, db.secureEntries, db.attachments, db.entryHistory, db.drafts, db.secureDrafts, async () => {
+  await db.transaction('rw', [db.entries, db.secureEntries, db.attachments, db.entryHistory, db.drafts, db.secureDrafts], async () => {
     if (secureEntries.length) await db.secureEntries.bulkPut(secureEntries)
     if (secureAttachments.length) await db.attachments.bulkPut(secureAttachments)
     if (secureHistory.length) await db.entryHistory.bulkPut(secureHistory)
