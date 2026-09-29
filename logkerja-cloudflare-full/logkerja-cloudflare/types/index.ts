@@ -15,6 +15,8 @@ export interface EntryAttachment {
 export interface WorkEntry {
   id: string
   date: string
+  // Older records have no workAreaId and belong to the built-in Umum area.
+  workAreaId?: string
   project?: string
   client?: string
   activity: string
@@ -76,6 +78,14 @@ export interface Project {
   status: 'active' | 'paused' | 'done'
   startedAt?: string
   endedAt?: string
+}
+
+export interface WorkArea {
+  id: string
+  name: string
+  color: string
+  archived: boolean
+  createdAt: string
 }
 
 export interface Tag { id: string; name: string; category?: string }
@@ -169,7 +179,7 @@ export interface IntegrationRun {
 
 export interface AIRequestPayload {
   mode: 'weekly' | 'monthly' | 'brag' | 'qa' | 'daily-prompts' | 'patterns' | 'weekly-letter' | 'review-prep' | 'whisper-structure'
-  entries: Array<Pick<WorkEntry, 'date' | 'project' | 'client' | 'activity' | 'problem' | 'solution' | 'lesson' | 'mood' | 'durationMin' | 'tags' | 'skills' | 'impact' | 'isAchievement'>>
+  entries: Array<Pick<WorkEntry, 'date' | 'project' | 'client' | 'activity' | 'problem' | 'solution' | 'lesson' | 'mood' | 'durationMin' | 'tags' | 'skills' | 'impact' | 'isAchievement'> & { workArea?: string }>
   question?: string
   locale?: Language
   rawText?: string

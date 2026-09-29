@@ -11,6 +11,9 @@ import { localDateKey } from '@/lib/date'
 import { clearDraft, createEntry, loadDraft, saveDraft } from '@/lib/repository/entries'
 import { useSecurity } from '@/components/security/SecurityProvider'
 import type { EntryDraft, Mood } from '@/types'
+import Link from 'next/link'
+import { useWorkAreas } from '@/hooks/useWorkAreas'
+import { GENERAL_AREA_ID } from '@/lib/work-areas'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 const MAX_TOTAL_FILE_BYTES = 30 * 1024 * 1024
@@ -22,7 +25,7 @@ const moods: Array<{ value: Mood; emoji: string; label: string }> = [
 
 function freshDraft(): EntryDraft {
   return {
-    id: 'quick-capture', date: localDateKey(), activity: '', problem: '', project: '', client: '', solution: '', lesson: '', impact: '',
+    id: 'quick-capture', date: localDateKey(), workAreaId: GENERAL_AREA_ID, activity: '', problem: '', project: '', client: '', solution: '', lesson: '', impact: '',
     mood: 3, durationMin: undefined, tags: [], skills: [], attachments: [], pendingFiles: [], isAchievement: false, updatedAt: new Date().toISOString()
   }
 }
@@ -32,6 +35,7 @@ export function QuickCaptureForm() {
   const searchParams = useSearchParams()
   const { key, locked, settings } = useSecurity()
   const templates = useLiveQuery(() => db.templates.toArray(), [], [])
+  const areas = useWorkAreas()
   const [draft, setDraft] = useState<EntryDraft>(freshDraft)
   const [advanced, setAdvanced] = useState(false)
   const [tagText, setTagText] = useState('')
@@ -51,10 +55,15 @@ export function QuickCaptureForm() {
     void (async () => {
       const stored = await loadDraft(key)
       if (!active) return
+      const requested = searchParams.get('area')
+      const selectedArea = requested ? await db.workAreas.get(requested) : null
+      if (!active) return
       if (stored) {
-        setDraft({ ...stored, pendingFiles: [] })
+        setDraft({ ...stored, workAreaId: selectedArea && !selectedArea.archived ? selectedArea.id : stored.workAreaId || GENERAL_AREA_ID, pendingFiles: [] })
         setTagText(stored.tags.join(', ')); setSkillText((stored.skills || []).join(', '))
-      } else if (settings?.defaultTemplateId) setDraft((d) => ({ ...d, templateId: settings.defaultTemplateId }))
+      } else {
+        if (active) setDraft((d) => ({ ...d, templateId: settings?.defaultTemplateId, workAreaId: selectedArea && !selectedArea.archived ? selectedArea.id : GENERAL_AREA_ID }))
+      }
       if (searchParams.get('shared') === '1') {
         const shared = await consumeLatestPendingShare()
         if (shared && active) {
@@ -115,7 +124,7 @@ export function QuickCaptureForm() {
     setSubmitting(true); setError('')
     try {
       await createEntry({
-        date: draft.date, project: draft.project?.trim() || undefined, client: draft.client?.trim() || undefined,
+        date: draft.date, workAreaId: draft.workAreaId || GENERAL_AREA_ID, project: draft.project?.trim() || undefined, client: draft.client?.trim() || undefined,
         activity: draft.activity.trim(), problem: draft.problem?.trim() || undefined, solution: draft.solution?.trim() || undefined,
         lesson: draft.lesson?.trim() || undefined, mood: draft.mood, durationMin: draft.durationMin || undefined,
         tags: parseList(tagText), skills: parseList(skillText), impact: draft.impact?.trim() || undefined,
@@ -141,6 +150,7 @@ export function QuickCaptureForm() {
       </header>
 
       <section className="card p-4 sm:p-5">
+        <div className="mb-4"><label className="label" htmlFor="work-area">Jenis pekerjaan</label><div className="flex gap-2"><select id="work-area" className="field" value={draft.workAreaId || GENERAL_AREA_ID} onChange={e => update('workAreaId', e.target.value)}>{areas.filter(area => !area.archived || area.id === draft.workAreaId).map(area => <option key={area.id} value={area.id}>{area.name}{area.archived ? ' (arsip)' : ''}</option>)}</select><Link href="/work-areas/" className="btn-secondary shrink-0">Kelola</Link></div><p className="mt-1 text-xs text-slate-500">Semua jenis pekerjaan otomatis tergabung dalam laporan global.</p></div>
         <div className="mb-4 grid grid-cols-[1fr_auto] gap-3">
           <select className="field" value={draft.templateId || ''} onChange={(e) => applyTemplate(e.target.value)} aria-label="Template">
             <option value="">Tanpa template</option>{templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}

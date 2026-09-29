@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Lightbulb, ListTree, Plus, Settings } from 'lucide-react'
+import { FolderKanban, Home, ListTree, Plus, Settings } from 'lucide-react'
 
 const items = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/timeline/', label: 'Timeline', icon: ListTree },
+  { href: '/work-areas/', label: 'Pekerjaan', icon: FolderKanban },
   { href: '/add/', label: 'Tambah', icon: Plus, primary: true },
-  { href: '/insights/', label: 'Insight', icon: Lightbulb },
+  { href: '/timeline/', label: 'Timeline', icon: ListTree },
   { href: '/settings/', label: 'Setelan', icon: Settings }
 ]
 

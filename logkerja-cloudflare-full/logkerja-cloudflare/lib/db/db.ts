@@ -12,7 +12,8 @@ import type {
   SecureDraftRecord,
   SecureEntryRecord,
   Summary,
-  Tag
+  Tag,
+  WorkArea
 } from '@/types'
 
 export class WorkDiaryDB extends Dexie {
@@ -21,6 +22,7 @@ export class WorkDiaryDB extends Dexie {
   attachments!: EntityTable<AttachmentRecord, 'id'>
   entryHistory!: EntityTable<EntryVersion, 'id'>
   projects!: EntityTable<Project, 'id'>
+  workAreas!: EntityTable<WorkArea, 'id'>
   tags!: EntityTable<Tag, 'id'>
   templates!: EntityTable<DiaryTemplate, 'id'>
   settings!: EntityTable<AppSettings, 'id'>
@@ -47,6 +49,22 @@ export class WorkDiaryDB extends Dexie {
       attachments: 'id, entryId, createdAt',
       entryHistory: 'id, entryId, createdAt, encrypted',
       projects: 'id, name, client, status, startedAt',
+      tags: 'id, name, category',
+      templates: 'id, name, isDefault, builtIn',
+      settings: 'id',
+      summaries: 'id, period, rangeStart, rangeEnd, generatedAt, source',
+      drafts: 'id, updatedAt',
+      secureDrafts: 'id, updatedAt',
+      focusSessions: 'id, startedAt, completed, entryId',
+      integrationRuns: 'id, provider, createdAt'
+    })
+    this.version(3).stores({
+      entries: 'id, date, project, client, mood, createdAt, updatedAt, *tags',
+      secureEntries: 'id, updatedAt',
+      attachments: 'id, entryId, createdAt',
+      entryHistory: 'id, entryId, createdAt, encrypted',
+      projects: 'id, name, client, status, startedAt',
+      workAreas: 'id, name, archived, createdAt',
       tags: 'id, name, category',
       templates: 'id, name, isDefault, builtIn',
       settings: 'id',

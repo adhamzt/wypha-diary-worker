@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { BookOpenCheck, Brain, Download, LockKeyhole, Plus, Smartphone, UploadCloud } from 'lucide-react'
 const steps=[
   ['1. Install PWA',Smartphone,'Buka URL Cloudflare di Chrome Android → menu ⋮ → Install app / Add to Home screen. Setelah service worker aktif, fitur inti tetap jalan offline.'],
-  ['2. Catat cepat',Plus,'Tekan tombol + di bawah. Isi Aktivitas dan Mood. Tekan Simpan. Detail proyek, masalah, solusi, dampak, skill, tag, dan lampiran bersifat opsional.'],
+  ['2. Catat cepat',Plus,'Tekan tombol + di bawah. Pilih jenis pekerjaan, isi Aktivitas dan Mood, lalu Simpan. Tambah/ubah jenis pekerjaan lewat menu Pekerjaan. Semua log tetap masuk Global. Proyek dan detail lainnya opsional.'],
   ['3. Cari bukti kerja',BookOpenCheck,'Timeline dapat dicari dan difilter berdasarkan proyek, mood, tanggal, dan pencapaian. Buka card untuk edit, duplikat, arsip, hapus, download attachment, atau melihat riwayat perubahan.'],
   ['4. Kunci diary',LockKeyhole,'Settings → aktifkan PIN. Catatan dan attachment lama dimigrasikan ke AES-GCM. Biometric menggunakan WebAuthn PRF jika authenticator mendukungnya; PIN selalu menjadi fallback.'],
   ['5. Gunakan AI dengan sadar',Brain,'Insights → pilih periode → tekan jenis analisis. Hanya teks entry pada periode tersebut yang dikirim; attachment tidak ikut. Tanpa internet/AI, fallback lokal tetap bekerja.'],

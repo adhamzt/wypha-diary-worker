@@ -10,6 +10,8 @@ import { useEntries } from '@/hooks/useEntries'
 import { useSecurity } from './security/SecurityProvider'
 import { calculateStreak } from '@/lib/stats/stats'
 import { useAutoWeeklyRecap } from '@/hooks/useAutoWeeklyRecap'
+import { useWorkAreas } from '@/hooks/useWorkAreas'
+import { areaId, areaName } from '@/lib/work-areas'
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(new Date(`${date}T00:00:00`))
@@ -17,6 +19,7 @@ function formatDate(date: string) {
 
 export function HomeDashboard() {
   const entries = useEntries()
+  const areas = useWorkAreas()
   const { settings } = useSecurity()
   const today = localDateKey()
   const active = entries.filter((e) => !e.archived)
@@ -54,6 +57,7 @@ export function HomeDashboard() {
         <div className="card p-4"><Flame className="text-amber-500" size={22}/><p className="mt-3 text-3xl font-black">{streak}</p><p className="text-xs text-slate-500">hari streak</p></div>
         <Link href="/analytics/" className="card p-4"><BarChart3 className="text-emerald-600" size={22}/><p className="mt-3 text-3xl font-black">{active.length}</p><p className="text-xs text-slate-500">total log</p></Link>
       </div>
+      <section><div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-extrabold">Seluruh pekerjaan</h2><Link className="text-sm font-bold text-indigo-600" href="/work-areas/">Kelola →</Link></div><div className="grid gap-2 sm:grid-cols-2">{areas.map(area=>{const subset=active.filter(entry=>areaId(entry)===area.id);return <Link href={`/timeline/?area=${encodeURIComponent(area.id)}`} key={area.id} className="card flex items-center gap-3 p-4"><span className="h-4 w-4 shrink-0 rounded-full" style={{backgroundColor:area.color}}/><span className="min-w-0 flex-1 truncate font-bold">{area.name}</span><span className="text-sm font-bold text-slate-500">{subset.length} log</span></Link>})}</div></section>
 
       {settings?.security?.enabled && <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"><ShieldCheck size={17}/> Vault AES-GCM aktif · auto-lock {settings.security.autoLockMin} menit</div>}
 
@@ -65,7 +69,7 @@ export function HomeDashboard() {
 
       <section>
         <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-extrabold">Catatan terbaru</h2><Link href="/timeline/" className="flex items-center gap-1 text-sm font-bold text-indigo-600">Lihat semua <ArrowRight size={15}/></Link></div>
-        <div className="space-y-3">{recent.length === 0 ? <div className="card p-6 text-center"><p className="font-bold">Belum ada catatan.</p><p className="mt-1 text-sm text-slate-500">Catatan pertama Anda akan muncul di sini.</p></div> : recent.map((entry) => <Link href={`/entry/?id=${encodeURIComponent(entry.id)}`} key={entry.id} className="card block p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide text-indigo-600">{entry.project || 'Tanpa proyek'}</p><p className="mt-1 line-clamp-2 font-semibold leading-6">{entry.activity}</p></div><span className="shrink-0 text-xs font-semibold text-slate-400">{formatDate(entry.date)}</span></div></Link>)}</div>
+        <div className="space-y-3">{recent.length === 0 ? <div className="card p-6 text-center"><p className="font-bold">Belum ada catatan.</p><p className="mt-1 text-sm text-slate-500">Catatan pertama Anda akan muncul di sini.</p></div> : recent.map((entry) => <Link href={`/entry/?id=${encodeURIComponent(entry.id)}`} key={entry.id} className="card block p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide text-indigo-600">{areaName(areas,entry.workAreaId)} · {entry.project || 'Tanpa proyek'}</p><p className="mt-1 line-clamp-2 font-semibold leading-6">{entry.activity}</p></div><span className="shrink-0 text-xs font-semibold text-slate-400">{formatDate(entry.date)}</span></div></Link>)}</div>
       </section>
     </main>
   )

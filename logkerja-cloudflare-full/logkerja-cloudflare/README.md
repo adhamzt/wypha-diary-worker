@@ -10,6 +10,8 @@ Production-oriented personal work diary PWA: local-first, offline-capable, optio
 - IndexedDB via Dexie
 - Quick Capture + voice-to-text + 5-second draft autosave
 - Timeline, search, date/project/mood filters
+- Multiple user-defined work areas in one global diary; legacy entries appear in Umum
+- Work area tabs, editable categories, archive/restore, and per-area analytics/insights/export
 - Web Share Target for text/link/image into Quick Capture
 
 ### Sprint 2 — Diary system + security
@@ -104,10 +106,10 @@ Cloudflare build settings:
 Framework preset : Next.js (Static HTML Export)
 Build command    : npm run build
 Build directory  : out
-Root directory   : /
+Root directory   : logkerja-cloudflare-full/logkerja-cloudflare
 ```
 
-The `/functions` directory stays at repository root. Cloudflare Pages detects it as Pages Functions and deploys `/functions/api/ai.ts` as `/api/ai`.
+The `/functions` directory stays at the selected project root (`logkerja-cloudflare-full/logkerja-cloudflare` in this repository). Cloudflare Pages detects it as Pages Functions and deploys `/functions/api/ai.ts` as `/api/ai`.
 
 ## AI secrets
 
@@ -130,6 +132,7 @@ Never prefix `OPENAI_API_KEY` with `NEXT_PUBLIC_`.
 - Web Share Target content is temporarily held by the service worker until Quick Capture consumes it; it should not be used for highly sensitive incoming attachments while the vault is locked.
 - Export Markdown/CSV/JSON/PDF is plaintext by design.
 - Emergency `.lkbackup` is encrypted with a separate backup password.
+- Work area names/colors are local plaintext metadata even when the optional vault is enabled.
 - AI is opt-in per action. The Cloudflare function calls the OpenAI Responses API with `store: false`.
 
 ## Reminder limitation

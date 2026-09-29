@@ -1,2 +1,3 @@
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
-export default function AnalyticsPage(){return <AnalyticsDashboard/>}
+import { Suspense } from 'react'
+export default function AnalyticsPage(){return <Suspense fallback={null}><AnalyticsDashboard/></Suspense>}

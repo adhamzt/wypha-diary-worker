@@ -1,6 +1,7 @@
 import { db } from '@/lib/db/db'
 import { decryptBlob, decryptJson, encryptBlob, encryptJson } from '@/lib/crypto/records'
 import type { AttachmentRecord, EntryDraft, EntryVersion, LegacyWorkEntry, SecureEntryRecord, WorkEntry } from '@/types'
+import { GENERAL_AREA_ID } from '@/lib/work-areas'
 
 async function isSecurityEnabled() {
   const settings = await db.settings.get('app')
@@ -54,7 +55,7 @@ export async function createEntry(input: Omit<WorkEntry, 'id' | 'createdAt' | 'u
   try {
     for (const file of input.files || []) attachments.push(await saveAttachment(id, file, key))
     const entry: WorkEntry = {
-      id, date: input.date, project: input.project, client: input.client, activity: input.activity,
+      id, date: input.date, workAreaId: input.workAreaId || GENERAL_AREA_ID, project: input.project, client: input.client, activity: input.activity,
       problem: input.problem, solution: input.solution, lesson: input.lesson, mood: input.mood,
       durationMin: input.durationMin, tags: input.tags, skills: input.skills, impact: input.impact,
       isAchievement: input.isAchievement, archived: input.archived, syncedAt: input.syncedAt,

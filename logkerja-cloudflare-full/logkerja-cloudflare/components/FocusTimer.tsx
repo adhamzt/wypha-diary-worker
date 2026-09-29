@@ -5,15 +5,19 @@ import { Pause, Play, RotateCcw, TimerReset } from 'lucide-react'
 import { useSecurity } from '@/components/security/SecurityProvider'
 import { createEntry } from '@/lib/repository/entries'
 import { localDateKey } from '@/lib/date'
+import { useWorkAreas } from '@/hooks/useWorkAreas'
+import { GENERAL_AREA_ID } from '@/lib/work-areas'
 
 const STORAGE = 'logkerja-focus-session'
 
-type Stored = { endAt: number; plannedMin: number; project: string; running: boolean; remainingMs?: number }
+type Stored = { endAt: number; plannedMin: number; project: string; workAreaId?: string; running: boolean; remainingMs?: number }
 
 export function FocusTimer() {
   const { key, locked } = useSecurity()
   const [minutes, setMinutes] = useState(25)
   const [project, setProject] = useState('')
+  const [workAreaId, setWorkAreaId] = useState(GENERAL_AREA_ID)
+  const areas = useWorkAreas()
   const [remaining, setRemaining] = useState(25 * 60)
   const [running, setRunning] = useState(false)
   const [done, setDone] = useState('')
@@ -24,6 +28,7 @@ export function FocusTimer() {
     try {
       const data = JSON.parse(raw) as Stored
       setProject(data.project || '')
+      setWorkAreaId(data.workAreaId || GENERAL_AREA_ID)
       setMinutes(data.plannedMin || 25)
       if (data.running) {
         const sec = Math.max(0, Math.ceil((data.endAt - Date.now()) / 1000))
@@ -44,22 +49,22 @@ export function FocusTimer() {
     localStorage.removeItem(STORAGE)
     if (!locked) {
       void createEntry({
-        date: localDateKey(), project: project || 'Focus Session', activity: `Focus session ${minutes} menit selesai`,
+        date: localDateKey(), workAreaId, project: project || 'Focus Session', activity: `Focus session ${minutes} menit selesai`,
         mood: 4, durationMin: minutes, tags: ['focus'], files: [], syncedAt: null
       }, key).then(() => setDone('Focus session otomatis tercatat di Timeline.'))
     }
-  }, [remaining, running, locked, key, minutes, project])
+  }, [remaining, running, locked, key, minutes, project, workAreaId])
 
   const clock = useMemo(() => `${String(Math.floor(remaining / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`, [remaining])
 
   function start() {
     const next = remaining > 0 ? remaining : minutes * 60
     setRemaining(next); setRunning(true); setDone('')
-    localStorage.setItem(STORAGE, JSON.stringify({ endAt: Date.now() + next * 1000, plannedMin: minutes, project, running: true } satisfies Stored))
+    localStorage.setItem(STORAGE, JSON.stringify({ endAt: Date.now() + next * 1000, plannedMin: minutes, project, workAreaId, running: true } satisfies Stored))
   }
   function pause() {
     setRunning(false)
-    localStorage.setItem(STORAGE, JSON.stringify({ endAt: 0, plannedMin: minutes, project, running: false, remainingMs: remaining * 1000 } satisfies Stored))
+    localStorage.setItem(STORAGE, JSON.stringify({ endAt: 0, plannedMin: minutes, project, workAreaId, running: false, remainingMs: remaining * 1000 } satisfies Stored))
   }
   function reset() {
     setRunning(false); setRemaining(minutes * 60); localStorage.removeItem(STORAGE); setDone('')
@@ -77,6 +82,7 @@ export function FocusTimer() {
           {[15,25,45,60].map((m) => <option key={m} value={m}>{m}m</option>)}
         </select>
       </div>
+      <select className="field mt-3" value={workAreaId} onChange={event=>setWorkAreaId(event.target.value)} disabled={running} aria-label="Jenis pekerjaan untuk sesi fokus">{areas.filter(area=>!area.archived||area.id===workAreaId).map(area=><option key={area.id} value={area.id}>{area.name}</option>)}</select>
       <div className="mt-4 flex items-center justify-between rounded-2xl bg-slate-950 px-5 py-4 text-white dark:bg-black">
         <span className="font-mono text-3xl font-black tracking-wider">{clock}</span>
         <div className="flex gap-2">

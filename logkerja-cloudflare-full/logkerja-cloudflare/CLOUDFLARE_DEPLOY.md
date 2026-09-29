@@ -6,7 +6,8 @@
 2. Buat repository GitHub baru dan upload seluruh isi folder proyek.
 3. Masuk ke Cloudflare Dashboard → Workers & Pages → Create application → Pages → Import existing Git repository.
 4. Pilih repository LogKerja.
-5. Isi build settings:
+5. Bila memakai repo `wypha-diary-worker`, set **Root directory** ke `logkerja-cloudflare-full/logkerja-cloudflare`. Bila memakai ZIP source yang hanya berisi aplikasi, gunakan folder aplikasinya sebagai root.
+6. Isi build settings:
 
 ```text
 Framework preset : Next.js (Static HTML Export)
@@ -14,11 +15,11 @@ Build command    : npm run build
 Build output     : out
 ```
 
-6. Deploy.
-7. Setelah selesai Anda memperoleh URL semacam `https://logkerja.pages.dev`.
+7. Deploy.
+8. Setelah selesai Anda memperoleh URL semacam `https://logkerja.pages.dev`.
 
 
-> **Penting:** jika Anda ingin fitur AI `/api/ai`, jangan memakai drag-and-drop ZIP biasa di dashboard untuk deployment final. Gunakan Git integration atau Wrangler, karena folder root `/functions` perlu dikompilasi sebagai Pages Functions. Drag-and-drop hanya cocok untuk frontend statis tanpa Function.
+> **Penting:** jika Anda ingin fitur AI `/api/ai`, jangan memakai drag-and-drop ZIP biasa di dashboard untuk deployment final. Gunakan Git integration atau Wrangler, karena folder `/functions` perlu dikompilasi sebagai Pages Functions. Drag-and-drop hanya cocok untuk frontend statis tanpa Function.
 
 ## Aktifkan AI (opsional)
 

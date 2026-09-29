@@ -6,12 +6,15 @@ import { Archive, Copy, Download, History, Save, Star, Trash2 } from 'lucide-rea
 import { useSecurity } from '@/components/security/SecurityProvider'
 import { deleteEntry, duplicateEntry, getAttachmentBlob, getEntry, listHistory, updateEntry } from '@/lib/repository/entries'
 import type { Mood, WorkEntry } from '@/types'
+import { useWorkAreas } from '@/hooks/useWorkAreas'
+import { GENERAL_AREA_ID } from '@/lib/work-areas'
 
 const moods: Array<{value:Mood;emoji:string}> = [{value:1,emoji:'😣'},{value:2,emoji:'😕'},{value:3,emoji:'😐'},{value:4,emoji:'🙂'},{value:5,emoji:'🚀'}]
 
 export function EntryDetail() {
   const router=useRouter(); const search=useSearchParams(); const id=search.get('id')||''; const {key,locked}=useSecurity()
   const [entry,setEntry]=useState<WorkEntry|null>(null); const [history,setHistory]=useState<WorkEntry[]>([]); const [showHistory,setShowHistory]=useState(false); const [message,setMessage]=useState(''); const [loading,setLoading]=useState(true)
+  const areas=useWorkAreas()
   useEffect(()=>{ if(!id||locked)return; let active=true; void (async()=>{ const item=await getEntry(id,key); if(active){setEntry(item);setLoading(false)} })(); return()=>{active=false}},[id,key,locked])
   const tags=useMemo(()=>entry?.tags.join(', ')||'',[entry?.tags]); const skills=useMemo(()=>entry?.skills?.join(', ')||'',[entry?.skills])
   if(loading) return <main className="app-shell"><div className="card h-80 animate-pulse bg-slate-100 dark:bg-slate-800"/></main>
@@ -26,6 +29,7 @@ export function EntryDetail() {
   async function downloadAttachment(a:WorkEntry['attachments'][number]){ const blob=await getAttachmentBlob(a.id,key); const url=URL.createObjectURL(blob); const el=document.createElement('a'); el.href=url; el.download=a.name; el.click(); setTimeout(()=>URL.revokeObjectURL(url),1000) }
   return <main className="app-shell"><header className="pt-2"><p className="eyebrow">DETAIL ENTRY</p><h1 className="mt-1 text-3xl font-black">Edit bukti kerja</h1><p className="mt-1 text-sm text-slate-500">Versi lama disimpan setiap kali Anda menekan Simpan.</p></header>
     <section className="card mt-5 space-y-4 p-5">
+      <div><label className="label">Jenis pekerjaan</label><select className="field" value={entry.workAreaId || GENERAL_AREA_ID} onChange={e=>set('workAreaId',e.target.value)}>{areas.filter(area=>!area.archived||area.id===(entry.workAreaId||GENERAL_AREA_ID)).map(area=><option key={area.id} value={area.id}>{area.name}{area.archived?' (arsip)':''}</option>)}</select></div>
       <div className="grid gap-4 sm:grid-cols-2"><div><label className="label">Tanggal</label><input type="date" className="field" value={entry.date} onChange={e=>set('date',e.target.value)}/></div><div><label className="label">Durasi</label><input type="number" className="field" value={entry.durationMin||''} onChange={e=>set('durationMin',e.target.value?Number(e.target.value):undefined)}/></div></div>
       <div><label className="label">Aktivitas</label><textarea className="field" rows={5} value={entry.activity} onChange={e=>set('activity',e.target.value)}/></div>
       <div className="grid grid-cols-5 gap-2">{moods.map(m=><button key={m.value} onClick={()=>set('mood',m.value)} className={`rounded-2xl border p-2 text-2xl ${entry.mood===m.value?'border-indigo-400 bg-indigo-50 dark:bg-indigo-950':'border-slate-200 dark:border-slate-700'}`}>{m.emoji}</button>)}</div>
