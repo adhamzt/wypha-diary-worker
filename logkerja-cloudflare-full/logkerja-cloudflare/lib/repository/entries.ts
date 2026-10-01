@@ -2,6 +2,7 @@ import { db } from '@/lib/db/db'
 import { decryptBlob, decryptJson, encryptBlob, encryptJson } from '@/lib/crypto/records'
 import type { AttachmentRecord, EntryDraft, EntryVersion, LegacyWorkEntry, SecureEntryRecord, WorkEntry } from '@/types'
 import { GENERAL_AREA_ID } from '@/lib/work-areas'
+import { prepareNoteVaultMigration } from '@/lib/repository/notes'
 
 async function isSecurityEnabled() {
   const settings = await db.settings.get('app')
@@ -210,11 +211,17 @@ export async function migratePlaintextToVault(key: CryptoKey) {
     secureDraft = { id: 'quick-capture', cipher: secured.cipher, iv: secured.iv, updatedAt: draft.updatedAt }
   }
 
-  await db.transaction('rw', [db.entries, db.secureEntries, db.attachments, db.entryHistory, db.drafts, db.secureDrafts], async () => {
+  const notes = await prepareNoteVaultMigration(key)
+
+  await db.transaction('rw', [db.entries, db.secureEntries, db.attachments, db.entryHistory, db.drafts, db.secureDrafts, db.notes, db.secureNotes, db.noteMedia, db.noteHistory], async () => {
     if (secureEntries.length) await db.secureEntries.bulkPut(secureEntries)
     if (secureAttachments.length) await db.attachments.bulkPut(secureAttachments)
     if (secureHistory.length) await db.entryHistory.bulkPut(secureHistory)
     if (secureDraft) await db.secureDrafts.put(secureDraft)
+    if (notes.secureNotes.length) await db.secureNotes.bulkPut(notes.secureNotes)
+    if (notes.secureMedia.length) await db.noteMedia.bulkPut(notes.secureMedia)
+    if (notes.secureHistory.length) await db.noteHistory.bulkPut(notes.secureHistory)
+    await db.notes.clear()
     await db.entries.clear()
     await db.drafts.delete('quick-capture')
   })

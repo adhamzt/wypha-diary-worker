@@ -88,6 +88,21 @@ export interface WorkArea {
   createdAt: string
 }
 
+export interface NoteChecklistItem { id: string; text: string; checked: boolean; createdAt: string; checkedAt?: string }
+export interface NoteCheckEvent { id: string; itemId: string; text: string; checked: boolean; at: string }
+export interface MindNode { id: string; parentId: string | null; text: string; color: string }
+export interface NoteMedia { id: string; name: string; type: string; size: number; kind: 'image' | 'drawing' | 'audio'; createdAt: string }
+export interface Note {
+  id: string; workAreaId: string; title: string; text: string
+  checklist: NoteChecklistItem[]; checkEvents: NoteCheckEvent[]; mindNodes: MindNode[]; media: NoteMedia[]
+  pinned: boolean; archivedAt?: string; deletedAt?: string; createdAt: string; updatedAt: string
+}
+export interface SecureNoteRecord { id: string; cipher: ArrayBuffer; iv: string; updatedAt: string; deletedAt?: string }
+export interface NoteMediaRecord extends NoteMedia {
+  noteId: string; encrypted: boolean; blob?: Blob; cipher?: ArrayBuffer; iv?: string
+}
+export interface NoteVersion { id: string; noteId: string; createdAt: string; encrypted: boolean; payload?: Note; cipher?: ArrayBuffer; iv?: string }
+
 export interface Tag { id: string; name: string; category?: string }
 
 export interface DiaryTemplate {

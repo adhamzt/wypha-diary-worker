@@ -8,9 +8,13 @@ import type {
   FocusSession,
   IntegrationRun,
   LegacyWorkEntry,
+  Note,
+  NoteMediaRecord,
+  NoteVersion,
   Project,
   SecureDraftRecord,
   SecureEntryRecord,
+  SecureNoteRecord,
   Summary,
   Tag,
   WorkArea
@@ -31,6 +35,10 @@ export class WorkDiaryDB extends Dexie {
   secureDrafts!: EntityTable<SecureDraftRecord, 'id'>
   focusSessions!: EntityTable<FocusSession, 'id'>
   integrationRuns!: EntityTable<IntegrationRun, 'id'>
+  notes!: EntityTable<Note, 'id'>
+  secureNotes!: EntityTable<SecureNoteRecord, 'id'>
+  noteMedia!: EntityTable<NoteMediaRecord, 'id'>
+  noteHistory!: EntityTable<NoteVersion, 'id'>
 
   constructor() {
     super('workdiary')
@@ -73,6 +81,12 @@ export class WorkDiaryDB extends Dexie {
       secureDrafts: 'id, updatedAt',
       focusSessions: 'id, startedAt, completed, entryId',
       integrationRuns: 'id, provider, createdAt'
+    })
+    this.version(4).stores({
+      notes: 'id, workAreaId, updatedAt, deletedAt, archivedAt, pinned',
+      secureNotes: 'id, updatedAt, deletedAt',
+      noteMedia: 'id, noteId, createdAt',
+      noteHistory: 'id, noteId, createdAt, encrypted'
     })
   }
 }

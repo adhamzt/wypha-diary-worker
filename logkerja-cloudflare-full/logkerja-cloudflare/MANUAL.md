@@ -1,5 +1,16 @@
 # Manual Ringkas
 
+## Note bebas (terpisah dari log kerja)
+Tekan tab **Note** → **Baru** → beri judul, pilih jenis pekerjaan (atau Umum), lalu tulis teks. Tekan **Simpan** sebelum kembali atau pindah tab. Note tidak dihitung sebagai log kerja, tetapi semua jenis pekerjaan dapat dilihat dan difilter dari satu tab Note.
+
+- **Daftar kegiatan:** Tambah item, lalu sentuh kotak untuk mencentang atau membatalkan. Buka **Riwayat centang** untuk melihat tanggal dan jam setiap perubahan; menghapus item tidak menghapus peristiwa lamanya.
+- **Peta pikiran:** Buat ide utama, sentuh `+` pada ide untuk menambah cabang; ubah teks dan warna, geser area peta, atau perbesar/perkecil. Menghapus satu cabang juga menghapus seluruh turunannya. Tekan **Simpan** setelah mengubah peta.
+- **Gambar:** Pilih file gambar. **Kanvas:** gambar dengan jari/mouse, lalu **Simpan gambar**. **Rekam audio:** izinkan mikrofon, tekan **Selesai rekam**; rekaman langsung tersimpan sebagai lampiran. Setiap file maksimal 20 MB.
+- **Pin**, **Arsipkan**, **Ke Sampah**, dan **Riwayat versi** ada di editor Note. Sampah menyimpan Note 30 hari sejak dihapus, kemudian dibersihkan otomatis saat aplikasi dibuka. Anda dapat memulihkan atau menghapus permanen lebih cepat. Arsip tetap tersimpan tanpa batas waktu.
+- **Backup/restore:** Setelan → Emergency Backup → password minimal 8 karakter → **Buat .lkbackup**. Simpan file dan password di tempat aman. File ini memuat log, Note, gambar, rekaman, kanvas, riwayat Note, dan jenis pekerjaan. Restore **mengganti seluruh data lokal** di browser itu dan menonaktifkan PIN vault; buat backup terbaru sebelum restore dan aktifkan PIN lagi bila diperlukan.
+
+Note dan lampirannya disimpan di perangkat/browser yang sedang dipakai. Membuka alamat app pada perangkat atau profil browser lain tidak otomatis menyalin data; gunakan backup/restore untuk memindahkannya. Hindari menghapus data situs/browser bila belum punya backup.
+
 ## Capture harian
 Home → Catat Sekarang → isi Aktivitas + Mood → Simpan. Detail lanjutan opsional. Draft autosave tiap 5 detik.
 

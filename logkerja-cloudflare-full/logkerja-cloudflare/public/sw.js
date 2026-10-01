@@ -1,7 +1,7 @@
 const VERSION = 'logkerja-__BUILD_VERSION__'
 const STATIC_CACHE = `${VERSION}-static`
 const RUNTIME_CACHE = `${VERSION}-runtime`
-const APP_SHELL = ['/', '/add/', '/timeline/', '/insights/', '/analytics/', '/settings/', '/integrations/', '/help/', '/offline/', '/icon-192.png', '/icon-512.png']
+const APP_SHELL = ['/', '/add/', '/timeline/', '/notes/', '/insights/', '/analytics/', '/settings/', '/integrations/', '/help/', '/offline/', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {

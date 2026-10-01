@@ -12,6 +12,8 @@ Production-oriented personal work diary PWA: local-first, offline-capable, optio
 - Timeline, search, date/project/mood filters
 - Multiple user-defined work areas in one global diary; legacy entries appear in Umum
 - Work area tabs, editable categories, archive/restore, and per-area analytics/insights/export
+- Separate Note tab for free text, per-area notes, checklists with timestamped completion history, image, drawing, audio and editable mind maps
+- Pinned notes, revision history, archive and 30-day trash; encrypted backup/restore includes notes and media
 - Web Share Target for text/link/image into Quick Capture
 
 ### Sprint 2 — Diary system + security
