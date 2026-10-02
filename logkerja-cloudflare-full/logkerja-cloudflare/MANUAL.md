@@ -3,7 +3,7 @@
 ## Note bebas (terpisah dari log kerja)
 Tekan tab **Note** → **Baru** → beri judul, pilih jenis pekerjaan (atau Umum), lalu tulis teks. Tekan **Simpan** sebelum kembali atau pindah tab. Note tidak dihitung sebagai log kerja, tetapi semua jenis pekerjaan dapat dilihat dan difilter dari satu tab Note.
 
-- **Daftar kegiatan:** Tambah item, lalu sentuh kotak untuk mencentang atau membatalkan. Buka **Riwayat centang** untuk melihat tanggal dan jam setiap perubahan; menghapus item tidak menghapus peristiwa lamanya.
+- **Daftar kegiatan:** Tambah item; teks panjang otomatis turun ke baris berikutnya agar utuh terbaca. Sentuh kotak untuk mencentang atau membatalkan. Buka **Riwayat centang** untuk melihat tanggal dan jam setiap perubahan. Anda dapat menghapus satu peristiwa dengan ikon tempat sampah atau **Hapus semua riwayat centang**. Penghapusan riwayat juga berlaku pada versi Note sebelumnya; status centang saat ini tidak berubah. Menghapus item daftar sendiri tidak otomatis menghapus riwayatnya.
 - **Peta pikiran:** Buat ide utama, sentuh `+` pada ide untuk menambah cabang; ubah teks dan warna, geser area peta, atau perbesar/perkecil. Menghapus satu cabang juga menghapus seluruh turunannya. Tekan **Simpan** setelah mengubah peta.
 - **Gambar:** Pilih file gambar. **Kanvas:** gambar dengan jari/mouse, lalu **Simpan gambar**. **Rekam audio:** izinkan mikrofon, tekan **Selesai rekam**; rekaman langsung tersimpan sebagai lampiran. Setiap file maksimal 20 MB.
 - **Pin**, **Arsipkan**, **Ke Sampah**, dan **Riwayat versi** ada di editor Note. Sampah menyimpan Note 30 hari sejak dihapus, kemudian dibersihkan otomatis saat aplikasi dibuka. Anda dapat memulihkan atau menghapus permanen lebih cepat. Arsip tetap tersimpan tanpa batas waktu.

@@ -59,6 +59,46 @@ export async function listNoteHistory(noteId: string, key: CryptoKey | null): Pr
   return result
 }
 
+export async function deleteNoteCheckHistory(note: Note, eventIds: string[] | 'all', key: CryptoKey | null): Promise<Note> {
+  const ids = new Set(eventIds === 'all' ? [] : eventIds)
+  const keep = (id: string) => eventIds !== 'all' && !ids.has(id)
+  const scrub = (value: Note): Note => ({ ...value, checkEvents: value.checkEvents.filter(event => keep(event.id)) })
+  const previous = await getNote(note.id, key)
+  if (!previous) throw new Error('Simpan Note terlebih dahulu.')
+  const encrypted = Boolean(await db.secureNotes.get(note.id)) || await vaultEnabled()
+  if (encrypted && !key) throw new Error('Buka vault terlebih dahulu.')
+
+  const next = { ...scrub(note), updatedAt: new Date().toISOString() }
+  const versions = await db.noteHistory.where('noteId').equals(note.id).toArray()
+  const cleanedVersions: NoteVersion[] = []
+  for (const version of versions) {
+    const payload = version.encrypted
+      ? await decryptJson<Note>(version.cipher!, version.iv!, key!)
+      : version.payload
+    if (!payload) throw new Error('Riwayat Note tidak dapat dibaca.')
+    const cleaned = scrub(payload)
+    cleanedVersions.push(version.encrypted
+      ? { ...version, ...await encryptJson(cleaned, key!) }
+      : { ...version, payload: cleaned })
+  }
+
+  // Keep the previous note as a version, but remove the deleted events from it too.
+  const snapshot: NoteVersion = {
+    id: crypto.randomUUID(), noteId: note.id, createdAt: next.updatedAt, encrypted,
+    ...(encrypted ? await encryptJson(scrub(previous), key!) : { payload: scrub(previous) })
+  }
+  const secured = encrypted ? await encryptJson(next, key!) : null
+  await db.transaction('rw', db.notes, db.secureNotes, db.noteHistory, async () => {
+    if (cleanedVersions.length) await db.noteHistory.bulkPut(cleanedVersions)
+    await db.noteHistory.put(snapshot)
+    if (secured) {
+      await db.secureNotes.put({ id: next.id, ...secured, updatedAt: next.updatedAt, deletedAt: next.deletedAt })
+      await db.notes.delete(next.id)
+    } else await db.notes.put(next)
+  })
+  return next
+}
+
 export async function addNoteMedia(noteId: string, blob: Blob, name: string, kind: NoteMedia['kind'], key: CryptoKey | null): Promise<NoteMedia> {
   if (blob.size > 20 * 1024 * 1024) throw new Error('Setiap file maksimal 20 MB.')
   if (kind === 'image' && !blob.type.startsWith('image/') || kind === 'audio' && !blob.type.startsWith('audio/')) throw new Error('Jenis file tidak sesuai.')

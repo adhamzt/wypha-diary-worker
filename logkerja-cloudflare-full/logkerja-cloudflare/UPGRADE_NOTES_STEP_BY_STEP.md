@@ -40,7 +40,7 @@ Cloudflare membedakan project yang terhubung GitHub dari unggah langsung. Jangan
 
 1. Pastikan log kerja lama masih muncul di **Timeline**.
 2. Tekan tab **Note → Baru**. Pilih pekerjaan, isi judul dan teks, lalu **Simpan**.
-3. Tambah satu item daftar, **Simpan**, lalu centang item. Buka **Riwayat centang** untuk melihat jamnya.
+3. Tambah satu item daftar dengan teks panjang; seluruh teks akan turun ke baris berikutnya. Tekan **Simpan**, lalu centang item. Buka **Riwayat centang** untuk melihat jamnya; ikon tempat sampah menghapus satu kejadian, sedangkan **Hapus semua riwayat centang** membersihkan seluruh kejadian pada Note itu.
 4. Tambah ide utama di **Peta pikiran**, tambah cabang, lalu **Simpan**.
 5. Uji gambar, **Kanvas**, dan **Rekam audio**. Browser akan meminta izin mikrofon; alamat HTTPS diperlukan.
 6. Uji **Pin**, **Arsip**, dan **Sampah**. Note di Sampah dapat dipulihkan dalam 30 hari sejak dihapus.

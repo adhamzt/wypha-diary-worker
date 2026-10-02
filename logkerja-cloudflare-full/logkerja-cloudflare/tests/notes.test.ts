@@ -11,7 +11,7 @@ test('note, checklist, media, riwayat, sampah, vault, dan backup tetap utuh', as
 
   const { db } = await import('@/lib/db/db')
   const { ensureBootstrap } = await import('@/lib/db/bootstrap')
-  const { emptyNote, saveNote, listNotes, listNoteHistory, addNoteMedia, getNoteMedia, purgeExpiredNotes } = await import('@/lib/repository/notes')
+  const { emptyNote, saveNote, listNotes, listNoteHistory, addNoteMedia, getNoteMedia, purgeExpiredNotes, deleteNoteCheckHistory, deleteNotePermanently } = await import('@/lib/repository/notes')
   const { migratePlaintextToVault } = await import('@/lib/repository/entries')
   const { createEncryptedBackup, restoreEncryptedBackup } = await import('@/lib/export/backup')
   await ensureBootstrap()
@@ -36,6 +36,15 @@ test('note, checklist, media, riwayat, sampah, vault, dan backup tetap utuh', as
   assert.equal((await getNoteMedia(withMedia.id, vaultKey)).size, 13)
   await saveNote({ ...checked, media: [] }, vaultKey)
 
+  const extra = emptyNote()
+  const extraEvent = { id: crypto.randomUUID(), itemId: 'item-extra', text: 'Uraian kegiatan yang panjang', checked: true, at: new Date().toISOString() }
+  const secureNote = await saveNote({ ...extra, checkEvents: [extraEvent] }, vaultKey)
+  await saveNote({ ...secureNote, title: 'Versi kedua' }, vaultKey)
+  const scrubbedSecure = await deleteNoteCheckHistory({ ...secureNote, title: 'Versi kedua' }, [extraEvent.id], vaultKey)
+  assert.equal(scrubbedSecure.checkEvents.length, 0)
+  assert.ok((await listNoteHistory(extra.id, vaultKey)).every(version => version.note.checkEvents.length === 0))
+  await deleteNotePermanently(extra.id)
+
   let backup: Blob | undefined
   const oldCreate = URL.createObjectURL, oldRevoke = URL.revokeObjectURL, oldDocument = globalThis.document
   URL.createObjectURL = blob => { if (blob instanceof Blob) backup = blob; return 'blob:test-note-backup' }
@@ -50,6 +59,15 @@ test('note, checklist, media, riwayat, sampah, vault, dan backup tetap utuh', as
     assert.equal((await listNoteHistory(saved.id, null))[0].note.media[0].id, withMedia.id)
     assert.equal((await getNoteMedia(withMedia.id, null)).size, 13)
     assert.equal(await db.entries.count(), 1)
+    const restored = (await listNotes(null))[0]
+    const clean = await deleteNoteCheckHistory(restored, 'all', null)
+    assert.equal(clean.checklist[0].checked, true)
+    assert.equal(clean.checkEvents.length, 0)
+    assert.ok((await listNoteHistory(saved.id, null)).every(version => version.note.checkEvents.length === 0))
+    await createEncryptedBackup('long-password', null)
+    await restoreEncryptedBackup(new File([backup!], 'clean-notes.lkbackup'), 'long-password')
+    assert.equal((await listNotes(null))[0].checkEvents.length, 0)
+    assert.ok((await listNoteHistory(saved.id, null)).every(version => version.note.checkEvents.length === 0))
   } finally { URL.createObjectURL = oldCreate; URL.revokeObjectURL = oldRevoke; globalThis.document = oldDocument }
 
   await saveNote({ ...checked, deletedAt: '2026-08-01T00:00:00.000Z' }, null)
